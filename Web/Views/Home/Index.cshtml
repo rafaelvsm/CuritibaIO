@@ -1,0 +1,30 @@
+﻿@{
+    ViewBag.Title = "Início";
+}
+<section class="jumbotron">
+    <div class="container">
+        <h1 class="jumbotron-heading">Curitiba.IO</h1>
+        <p class="lead text-muted">Visualização dos dados públicos da Prefeitura Municipal de Curitiba.</p>
+    </div>
+</section>
+
+<div class="row text-center">
+    <div class="col-lg-6">
+        <span class="fa-stack fa-4x">
+            <i class="far fa-circle fa-stack-2x"></i>
+            <i class="fas fa-file-invoice-dollar fa-stack-1x"></i>
+        </span>
+        <h2>Despesas</h2>
+        <p>Todos os dispêndios realizados pela Prefeitura para o funcionamento e manutenção dos serviços públicos.</p>
+        <p><a class="btn btn-primary" href="@Url.Content("~/OpenDespesas")" role="button">Acessar »</a></p>
+    </div>
+    <div class="col-lg-6">
+        <span class="fa-stack fa-4x">
+            <i class="far fa-circle fa-stack-2x"></i>
+            <i class="fas fa-hand-holding-usd fa-stack-1x"></i>
+        </span>
+        <h2>Receitas</h2>
+        <p>Todos os recursos financeiros que a Prefeitura de Curitiba recebe.</p>
+        <p><a class="btn btn-primary" href="@Url.Content("~/OpenReceitas")" role="button">Acessar »</a></p>
+    </div>
+</div>

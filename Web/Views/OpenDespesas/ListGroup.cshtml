@@ -1,0 +1,72 @@
+﻿@model IEnumerable<Services.Models.GroupItem>
+@using Web.Models;
+@using Web.Helpers;
+@using System.Globalization;
+
+<table class="dataTable table-striped">
+    <thead>
+        <tr>
+            @if (Model.Count() > 0 && Model.FirstOrDefault().Group.Count() > 0)
+            {
+                <th>Ano</th>
+                if (!string.IsNullOrEmpty(Request.QueryString["groupby_MONTH"]) && Request.QueryString["groupby_MONTH"] == "1")
+                {
+                    var qsArray = Request.Url.Query.Replace("?", "").Split('&');
+                    var newQs = string.Join("&", qsArray.Select(x => x.StartsWith("groupby_MONTH") ? "groupby_MONTH=0" : x));
+                    <th>
+                        Mês
+                        <a href="@string.Format("{0}?{1}", Request.Url.AbsolutePath, newQs)" class="btn btn-danger btn-xs" title="Remover"><i class="fa fa-times"></i></a>
+                    </th>
+                }
+                foreach (var i in Request.QueryString.Keys)
+                {
+                    if (i.ToString().StartsWith("group_"))
+                    {
+                        <th>@Request.QueryString[i.ToString()]</th>
+                    }
+                }
+            }
+            <th class="text-right">Quantidade</th>
+            <th class="text-right">Soma (R$)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Any())
+        {
+            var fixedGroups = 1;
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @item.Group[0]
+                    </td>
+                    @if (!string.IsNullOrEmpty(Request.QueryString["groupby_MONTH"]) && Request.QueryString["groupby_MONTH"] == "1")
+                    {
+                        fixedGroups = 2;
+                        <td>
+                            @DateTimeFormatInfo.GetInstance(CultureInfo.GetCultureInfo("pt-BR")).GetMonthName(Convert.ToInt32(item.Group[1])).ToTitleCase()
+                        </td>
+                    }
+                    @foreach (var g in item.Group.Skip(fixedGroups).Take(item.Group.Length - fixedGroups))
+                    {
+                        <td>@{ Html.RenderPartial("TextMaxlengthToTooltip", new TextMaxlengthToTooltipModelItem { Text = g.FirstLetterToUpper(), MaxLength = 50, DataPlacement = "right" }); }</td>
+                    }
+                    <td class="text-right">
+                        @item.Count.ToString("N0", CultureInfo.GetCultureInfo("pt-BR"))
+                    </td>
+                    <td class="text-right">
+                        @item.Sum.ToString("N2", CultureInfo.GetCultureInfo("pt-BR"))
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="2" class="text-center">
+                    Não foram encontrados registros para a sua busca.
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

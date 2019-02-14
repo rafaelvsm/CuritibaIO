@@ -1,0 +1,134 @@
+﻿@model IEnumerable<Services.Models.OpenDespesasItem>
+@using Web.Helpers
+@using Web.Models
+@using System.Globalization
+
+<table class="dataTable table-striped">
+    <thead>
+        <tr>
+            <th>
+                <input type="checkbox" id="chkFonte" name="group_DS_FONTE" value="Fonte" style="visibility:hidden" />
+                <label for="chkFonte">Fonte</label>
+            </th>
+            <th>
+                <input type="checkbox" id="chkFuncao" name="group_DS_FUNCAO" value="Função" style="visibility:hidden" />
+                <label for="chkFuncao">Função</label>
+            </th>
+            <th title="Data do empenho">
+                @{ 
+                    var qsSortByData = HttpUtility.ParseQueryString(Request.QueryString.ToString());
+                    var sortDescData = string.IsNullOrEmpty(Request.QueryString["sortDesc"]) ? true : Convert.ToBoolean(Request.QueryString["sortDesc"]);
+                    qsSortByData.Set("sortDesc", (!sortDescData).ToString());
+                    qsSortByData.Set("sortBy", "DT_EMPENHO");
+                    bool? isSortDescData = Request.QueryString["sortBy"] == "DT_EMPENHO" ? (string.IsNullOrEmpty(Request.QueryString["sortDesc"]) ? true : Convert.ToBoolean(Request.QueryString["sortDesc"])) : (bool?)null;
+                }
+                <a href="?@qsSortByData">
+                    @if (isSortDescData.HasValue)
+                    {
+                        <i class="fa @(isSortDescData.Value ? "fa-arrow-down" : "fa-arrow-up")"></i>                    
+                    }
+                    Data
+                </a>
+            </th>
+            <th>
+                @{ 
+                    var qsSortByValorEmpenhado = HttpUtility.ParseQueryString(Request.QueryString.ToString());
+                    var sortDescValorEmpenhado = string.IsNullOrEmpty(Request.QueryString["sortDesc"]) ? true : Convert.ToBoolean(Request.QueryString["sortDesc"]);
+                    qsSortByValorEmpenhado.Set("sortDesc", (!sortDescData).ToString());
+                    qsSortByValorEmpenhado.Set("sortBy", "VL_EMPENHADO");
+                    bool? isSortDescValorEmpenhado = Request.QueryString["sortBy"] == "VL_EMPENHADO" ? (string.IsNullOrEmpty(Request.QueryString["sortDesc"]) ? true : Convert.ToBoolean(Request.QueryString["sortDesc"])) : (bool?)null;
+                }
+                <a href="?@qsSortByValorEmpenhado">
+                    @if (isSortDescValorEmpenhado.HasValue)
+                    {
+                        <i class="fa @(isSortDescValorEmpenhado.Value ? "fa-arrow-down" : "fa-arrow-up")"></i>                    
+                    }
+                    Valor (R$)
+                </a>
+            </th>
+            <th>
+                <input type="checkbox" id="chkAcao" name="group_DS_ACAO" value="Ação" style="visibility:hidden" />
+                <label for="chkAcao">Ação</label>
+            </th>
+            <th>
+                <input type="checkbox" id="chkOrgao" name="group_DS_ORGAO" value="Orgão" style="visibility:hidden" />
+                <label for="chkOrgao">Orgão</label>
+            </th>
+            <th>
+                <input type="checkbox" id="chkDespesa" name="group_DS_DESPESA" value="Despesa" style="visibility:hidden" />
+                <label for="chkDespesa">Despesa</label>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Any())
+        {
+            foreach (var item in Model)
+            {
+            <tr>
+                <td>
+                    @{ Html.RenderPartial("TextMaxlengthToTooltip", new TextMaxlengthToTooltipModelItem { Text = item.DS_FONTE.FirstLetterToUpper(), MaxLength = 30, DataPlacement = "right" }); }
+                </td>
+                <td>
+                    <span class="label label-primary" title="Função">@{ Html.RenderPartial("TextMaxlengthToTooltip", new TextMaxlengthToTooltipModelItem { Text = item.DS_FUNCAO.ToTitleCase(), MaxLength = 25, DataPlacement = "right" }); }</span>
+                    <br />
+                    @{ Html.RenderPartial("TextMaxlengthToTooltip", new TextMaxlengthToTooltipModelItem { Text = item.DS_PROGRAMA.ToTitleCase(), MaxLength = 25, DataPlacement = "right" }); }
+                </td>
+                <td>
+                    <span title="Data do empenho">
+                        @string.Format("{0:dd/MM/yy}", item.DT_EMPENHO)
+                    </span>
+                </td>
+                <td class="text-right">
+                    <span class="Valor empenhado">@item.VL_EMPENHADO.ToString("N2", new CultureInfo("pt-BR"))</span>
+                    @if (!string.IsNullOrEmpty(item.TRANSACAO))
+                    {
+                        if (item.VL_LIQUIDADO > 0)
+                        {
+                        <a tabindex="0" role="button" data-toggle="popover" data-content="@string.Format(new CultureInfo("pt-BR"), "{0}<br> {1:N2} em  {2:dd/MM/yy} <br>Parcela: {3}", item.TRANSACAO, item.VL_LIQUIDADO, item.DT_TRANSACAO, item.NR_PARCELA)"><i class="fa fa-plus-circle"></i></a>
+                        }
+                        else if (item.VL_DEVOLVIDO > 0)
+                        {
+                        <a tabindex="0" role="button" data-toggle="popover" data-content="@string.Format(new CultureInfo("pt-BR"), "{0}<br> {1:N2} em  {2:dd/MM/yy} <br>Parcela: {3}", item.TRANSACAO, item.VL_DEVOLVIDO, item.DT_TRANSACAO, item.NR_PARCELA)"><i class="fa fa-plus-circle"></i></a>
+                        }
+                        else if (item.VL_ANULADO > 0)
+                        {
+                        <a tabindex="0" role="button" data-toggle="popover" data-content="@string.Format(new CultureInfo("pt-BR"), "{0}<br> {1:N2} em  {2:dd/MM/yy} <br>Parcela: {3}", item.TRANSACAO, item.VL_ANULADO, item.DT_TRANSACAO, item.NR_PARCELA)"><i class="fa fa-plus-circle"></i></a>
+                        }
+                        else if (item.VL_PAGO > 0)
+                        {
+                        <a tabindex="0" role="button" data-toggle="popover" data-content="@string.Format(new CultureInfo("pt-BR"), "{0}<br> {1:N2} em  {2:dd/MM/yy} <br>Parcela: {3}", item.TRANSACAO, item.VL_PAGO, item.DT_TRANSACAO, item.NR_PARCELA)"><i class="fa fa-plus-circle"></i></a>
+                        }
+                        else if (item.VL_CONSIGNADO > 0)
+                        {
+                        <a tabindex="0" role="button" data-toggle="popover" data-content="@string.Format(new CultureInfo("pt-BR"), "{0}<br> {1:N2} em  {2:dd/MM/yy} <br>Parcela: {3}", item.TRANSACAO, item.VL_CONSIGNADO, item.DT_TRANSACAO, item.NR_PARCELA)"><i class="fa fa-plus-circle"></i></a>
+                        }
+                    }
+                </td>
+                <td>
+                    @{ Html.RenderPartial("TextMaxlengthToTooltip", new TextMaxlengthToTooltipModelItem { Text = item.DS_ACAO.FirstLetterToUpper(), MaxLength = 25, DataPlacement = "right" }); }
+                    <br />
+                    <small class="text-muted">@{ Html.RenderPartial("TextMaxlengthToTooltip", new TextMaxlengthToTooltipModelItem { Text = item.DS_SUBELEMENTO.FirstLetterToUpper(), MaxLength = 30, DataPlacement = "right" }); }</small>
+                </td>
+                <td>
+                    <abbr title="@item.DS_ORGAO.ToTitleCase()">@item.DS_ORGAO.ToAbbreviation()</abbr>
+                </td>
+                <td>
+                    @{ Html.RenderPartial("TextMaxlengthToTooltip", new TextMaxlengthToTooltipModelItem { Text = item.DS_DESPESA.FirstLetterToUpper(), MaxLength = 25, DataPlacement = "left" }); }
+                    <br />
+                    <small title="Modalidade" class="text-muted">@{ Html.RenderPartial("TextMaxlengthToTooltip", new TextMaxlengthToTooltipModelItem { Text = item.DS_MODALIDADE.FirstLetterToUpper(), MaxLength = 25, DataPlacement = "right" }); }</small>
+                    <a tabindex="0" role="button" data-toggle="popover" data-content="@string.Format("Licitação: {0}<br>CNPJ: {1}", item.LICITACAO, item.CPF_CNPJ)"><i class="fa fa-plus-circle"></i></a>
+                </td>
+            </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td  class="text-center" colspan="7">
+                    Não foram encontrados registros para a sua busca.
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,185 @@
+﻿@using Web.Helpers
+@{
+    ViewBag.Title = "Receitas";
+}
+
+<h1>Receitas</h1>
+<p class="text-muted">
+    Todos os recursos financeiros que a Prefeitura recebe.
+</p>
+
+<div>
+    <div class="text-right">
+        <a id="btnFilter" href="#" class="btn btn-default">Filtrar <i class="fa fa-filter"></i></a>
+        @if (Request.QueryString.AllKeys.Where(x => x.StartsWith("group")).Any())
+        {
+            var qsArray = Request.Url.Query.Replace("?", "").Split('&');
+            var newQs = string.Join("&", qsArray.Where(x => !x.StartsWith("group")));
+            <a id="btnGroup" href="@string.Format("{0}?{1}", Request.Url.AbsolutePath, newQs)" class="btn btn-danger">Desagrupar <i class="fa fa-project-diagram"></i></a>
+        }
+        else
+        {
+            <a id="btnGroup" href="#" class="btn btn-default">Agrupar <i class="fa fa-project-diagram"></i></a>
+        }
+
+        <br />
+        @{
+            var filters = new List<string>();
+            foreach (var key in Request.QueryString)
+            {
+                if (key.ToString().StartsWith("find_"))
+                {
+                    var value = Request.QueryString[key.ToString()];
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        filters.Add(value.ToTitleCase());
+                    }
+                }
+                else if (key.ToString().StartsWith("range_"))
+                {
+                    var values = Request.QueryString[key.ToString()].Split(',');
+                    foreach (var value in values)
+                    {
+                        if (!string.IsNullOrEmpty(value))
+                        {
+                            filters.Add(value);
+                        }
+                    }
+                }
+            }
+            if (filters.Any())
+            {
+                <span>Filtros: </span>
+                <small>@string.Join(" + ", filters)</small>
+            }
+        }
+    </div>
+    <form class="form-search-filters form-horizontal" style="display:none;" method="get">
+        <hr />
+        <h6>Filtragem:</h6>
+        <div class="form-group row">
+            @{
+                var dts = !string.IsNullOrEmpty(Request.QueryString["range_DT_APROPRIACAO"]) ? Request.QueryString["range_DT_APROPRIACAO"].Split(',') : new string[2] { string.Empty, string.Empty };
+                var dtInicial = dts[0];
+                var dtFinal = dts[1];
+            }
+            <label class="col-sm-2 control-label">Data inicial</label>
+            <div class="col-sm-4">
+                <input type="date" name="range_DT_APROPRIACAO" value="@dtInicial" class="form-control input-sm" placeholder="Data inicial" />
+            </div>
+            <label class="col-sm-2 control-label">Data final</label>
+            <div class="col-sm-4">
+                <input type="date" name="range_DT_APROPRIACAO" value="@dtFinal" class="form-control input-sm" placeholder="Data final" />
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 control-label">Categoria</label>
+            <div class="col-sm-4">
+                @Html.DropDownList("find_DESCRICAO_CATEGORIA", new SelectList(ViewBag.Categorias, "Value", "Text", Request.QueryString["find_DESCRICAO_CATEGORIA"]), " - Todas - ", new { @class = "form-control input-sm" })
+            </div>
+            <label class="col-sm-2 control-label">Origem</label>
+            <div class="col-sm-4">
+                @Html.DropDownList("find_DESCRICAO_ORIGEM", new SelectList(ViewBag.Origens, "Value", "Text", Request.QueryString["find_DESCRICAO_ORIGEM"]), " - Todas - ", new { @class = "form-control input-sm" })
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 control-label">Espécie</label>
+            <div class="col-sm-4">
+                @Html.DropDownList("find_DESCRICAO_ESPECIE", new SelectList(ViewBag.Especies, "Value", "Text", Request.QueryString["find_DESCRICAO_ESPECIE"]), " - Todas - ", new { @class = "form-control input-sm" })
+            </div>
+            <label class="col-sm-2 control-label">Tipo</label>
+            <div class="col-sm-4">
+                @Html.DropDownList("find_TP_RECEITA_ORC", new SelectList(ViewBag.Tipos, "Value", "Text", Request.QueryString["find_TP_RECEITA_ORC"]), " - Todas - ", new { @class = "form-control input-sm" })
+            </div>
+        </div>
+        <div class="form-group row">
+            <label class="col-sm-2 control-label">Empresa</label>
+            <div class="col-sm-4">
+                @Html.DropDownList("find_NM_EMPRESA", new SelectList(ViewBag.Empresas, "Value", "Text", Request.QueryString["find_NM_EMPRESA"]), " - Todas - ", new { @class = "form-control input-sm" })
+            </div>
+            <label class="col-sm-2 control-label">Fonte</label>
+            <div class="col-sm-4">
+                @Html.DropDownList("find_DS_FONTE", new SelectList(ViewBag.Fontes, "Value", "Text", Request.QueryString["find_DS_FONTE"]), " - Todas - ", new { @class = "form-control input-sm" })
+            </div>
+        </div>
+        <div class="form-group row">
+            @{
+                var vls = !string.IsNullOrEmpty(Request.QueryString["range_VL_RECEITA"]) ? Request.QueryString["range_VL_RECEITA"].Split(',') : new string[2] { string.Empty, string.Empty };
+                var vlInicial = vls[0];
+                var vlFinal = vls[1];
+            }
+            <label class="col-sm-2 control-label">Valor inicial</label>
+            <div class="col-sm-4">
+                <input type="number" name="range_VL_RECEITA" value="@vlInicial" class="form-control input-sm" placeholder="Valor inicial" />
+            </div>
+            <label class="col-sm-2 control-label">Valor final</label>
+            <div class="col-sm-4">
+                <input type="number" name="range_VL_RECEITA" value="@vlFinal" class="form-control input-sm" placeholder="Valor final" />
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-10 col-sm-offset-2">
+                @foreach(var key in Request.QueryString)
+                {
+                    if(key.ToString().StartsWith("group_") || key.ToString().StartsWith("groupby_"))
+                    {
+                        <input type="hidden" name="@key" value="@Request.QueryString[key.ToString()]" />
+                    }
+                }
+                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Buscar</button>
+            </div>
+        </div>
+        <hr />
+    </form>
+
+    @if (Request.QueryString.AllKeys.Where(x => x.StartsWith("group")).Any())
+    {
+        Html.RenderAction("ListGroup");
+    }
+    else
+    {
+        var page = !string.IsNullOrEmpty(Request.QueryString["page"]) ? Convert.ToInt32(Request.QueryString["page"]) : 1;
+        var count = 20;
+        var index = (page - 1) * count;
+
+        Html.RenderAction("List", new { index = index, count = count });
+
+        var qsLastPage = HttpUtility.ParseQueryString(Request.QueryString.ToString());
+        qsLastPage.Set("page", (page - 1).ToString());
+        var qsNextPage = HttpUtility.ParseQueryString(Request.QueryString.ToString());
+        qsNextPage.Set("page", (page + 1).ToString());
+
+        <hr />
+        <p class="text-center">
+            @if (page > 1)
+            {
+                <text><a href="?@qsLastPage" class="btn btn-default"><< Anterior</a> |</text>
+            }
+            <span>@string.Format("Página {0}", page)</span>
+            | <a href="?@qsNextPage" class="btn btn-default">Próxima >></a>
+        </p>
+    }
+</div>
+
+@section scripts{
+<script type="text/javascript">
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip({ html: true });
+
+            $("#btnFilter").on("click", function () {
+                $(".form-search-filters").slideDown();
+                $(this).hide();
+            });
+
+            $("#btnGroup").on("click", function () {
+                if ($(this).hasClass("btn-default")) {
+                    $(".dataTable th :checkbox").css('visibility', 'visible');
+                    $(this).removeClass("btn-default").addClass("btn-primary");
+                } else if ($(this).hasClass("btn-primary")) {
+                    var qsGroup = $("input:checkbox[name^='group_']").serialize();
+                    $(this).attr({ href: "@Html.Raw(Request.Url.PathAndQuery + (Request.Url.PathAndQuery.Contains("?") ? "&" : "?"))" + (qsGroup != "" ? qsGroup + "&" : "" ) + "groupby_MONTH=1" });
+                }
+            });
+        });
+</script>
+}

@@ -1,0 +1,13 @@
+﻿@model Web.Models.TextMaxlengthToTooltipModelItem
+
+@if (!string.IsNullOrEmpty(Model.Text))
+{
+    if (Model.Text.Length > Model.MaxLength)
+    {
+        <span @(Model.IsTextMuted ? "class=\"text-muted\"" : "") style="white-space:nowrap" data-toggle="tooltip" data-placement="@(!string.IsNullOrEmpty(Model.DataPlacement) ? Model.DataPlacement : "bottom")" title="@Model.Text">@Model.Text.Substring(0, Model.MaxLength)...</span>
+    }
+    else
+    {
+        <span @(Model.IsTextMuted ? "class=\"text-muted\"" : "")>@Model.Text</span>
+    }
+}
